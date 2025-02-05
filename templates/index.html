@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Sticker Stats</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Telegram Sticker Usage Statistics</h1>
+        
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">Top Stickers</h2>
+                <div id="stickerStats" class="space-y-4"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">Top Users</h2>
+                <div id="userStats" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadStats() {
+            try {
+                const response = await fetch('/stats');
+                const data = await response.json();
+                
+                const stickerStats = document.getElementById('stickerStats');
+                const userStats = document.getElementById('userStats');
+
+                stickerStats.innerHTML = data.sticker_stats
+                    .map(stat => `
+                        <div class="border-b pb-2">
+                            <p class="font-medium">Sticker ID: ${stat.sticker_id}</p>
+                            <p class="text-sm text-gray-600">
+                                Total sends: ${stat.total_sends}<br>
+                                Top users: ${stat.top_users.join(', ')}
+                            </p>
+                        </div>
+                    `).join('');
+
+                userStats.innerHTML = data.user_stats
+                    .map(stat => `
+                        <div class="border-b pb-2">
+                            <p class="font-medium">${stat.username || stat.first_name}</p>
+                            <p class="text-sm text-gray-600">
+                                Total stickers sent: ${stat.sends}<br>
+                                Favorite stickers: ${stat.favorite_stickers.length}
+                            </p>
+                        </div>
+                    `).join('');
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        loadStats();
+        // Refresh stats every minute
+        setInterval(loadStats, 60000);
+    </script>
+</body>
+</html> 
